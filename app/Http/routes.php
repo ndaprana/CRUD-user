@@ -19,15 +19,14 @@ Route::get('auth/logout', 'Auth\AuthController@getLogout');
 Route::get('auth/register', 'Auth\AuthController@getRegister');
 Route::post('auth/register', 'Auth\AuthController@postRegister');
 
-Route::get('/login', 'HomeController@login');
-Route::get('/register', 'HomeController@register');
-
 Route::get('/', 'HomeController@index');
 Route::get('/home', 'HomeController@index');
 
 Route::get('/profile', 'HomeController@profile');
 
 Route::get('/user', 'HomeController@user');
+Route::get('/user/edit/{id}', 'HomeController@useredit')->where('id', '[A-Za-z0-9\.\-]+');
+Route::post('/edit/user', 'HomeController@edituser');
 
 Route::get('/user/delete/{id}', 'HomeController@deluser')->where('id', '[A-Za-z0-9\.\-]+');
 Route::get('/user/active/{id}', 'HomeController@actuser')->where('id', '[A-Za-z0-9\.\-]+');
@@ -35,5 +34,5 @@ Route::get('/user/inactive/{id}', 'HomeController@inactuser')->where('id', '[A-Z
 
 Route::get('/logout', function () {
 	Auth::logout();
-	return redirect('login');
+	return redirect('/auth/login');
 });

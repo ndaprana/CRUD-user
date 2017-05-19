@@ -6,6 +6,8 @@ use App\Home;
 use App\Http\Controllers\Controller;
 use Auth;
 use App\User;
+use Input;
+use Validator;
 
 class HomeController extends Controller {
 
@@ -24,7 +26,7 @@ class HomeController extends Controller {
 
 	public function index()
 	{
-        if(!Auth::id()) return redirect( '/login');
+        if(!Auth::id()) return redirect( '/auth/login');
 
 		$data['user'] = Auth::user();
 
@@ -48,7 +50,7 @@ class HomeController extends Controller {
 
 	public function profile()
 	{
-        if(!Auth::id()) return redirect( '/login');
+        if(!Auth::id()) return redirect( '/auth/login');
 
 		$data['user'] = Auth::user();
 
@@ -57,7 +59,7 @@ class HomeController extends Controller {
 
 	public function user()
 	{
-        if(!Auth::id()) return redirect( '/login');
+        if(!Auth::id()) return redirect( '/auth/login');
 
         $data['users'] = User::getUser();
 		$data['user'] = Auth::user();
@@ -65,9 +67,62 @@ class HomeController extends Controller {
 		return view('table')->with($data);
 	}
 
+	public function useradd()
+	{
+        if(!Auth::id()) return redirect( '/auth/login');
+
+        $data['users'] = User::getUser();
+		$data['user'] = Auth::user();
+
+		return view('create')->with($data);
+	}
+
+	public function useredit($id)
+	{
+        if(!Auth::id()) return redirect( '/auth/login');
+
+
+        $data['users'] = User::getUser();
+		$data['user'] = Auth::user();
+		$data['edit'] = User::find($id);
+
+		return view('edit')->with($data);
+	}
+
+	public function edituser()
+	{
+        if(!Auth::id()) return redirect( '/auth/login');
+
+        $data['users'] = User::getUser();
+		$data['user'] = Auth::user();
+
+		$rules = array(
+			'name'       => 'required',
+			'email'      => 'required|email',
+            'password' => 'required|confirmed|min:6',
+		);
+		$validator = Validator::make(Input::all(), $rules);
+
+        if ($validator->fails()) {
+			return redirect('user/edit/'.Input::get('id'))
+				->withErrors($validator)
+				->withInput(Input::except('password'));
+		} else {
+			// store
+			$user = User::find(Input::get('id'));
+			$user->name       = Input::get('name');
+			$user->password = bcrypt(Input::get('password'));
+			$user->save();
+			// redirect
+			session('message', 'Successfully created user!');
+			return redirect('/user');
+		}
+
+	}
+
 	public function actuser($id)
 	{
-        if(!Auth::id()) return redirect( '/login');
+        if(!Auth::id()) return redirect( '/auth/login');
 
         User::actUser($id);
 
@@ -76,7 +131,7 @@ class HomeController extends Controller {
 
 	public function inactuser($id)
 	{
-        if(!Auth::id()) return redirect( '/login');
+        if(!Auth::id()) return redirect( '/auth/login');
 
         User::inactUser($id);
 
@@ -85,7 +140,7 @@ class HomeController extends Controller {
 
 	public function deluser($id)
 	{
-        if(!Auth::id()) return redirect( '/login');
+        if(!Auth::id()) return redirect( '/auth/login');
 
         User::delUser($id);
 
